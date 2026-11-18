@@ -1,6 +1,7 @@
-
-from q_learning import Q
+from q_learning import Q,WALL_PENALTY
 from environment import GOAL
+
+from collections import deque
 
 def get_best_path(q_grid, start_state, goal):
     """
@@ -36,3 +37,46 @@ def get_best_path(q_grid, start_state, goal):
 
     # Return the completed path.
     return path
+
+
+def bfs_shortest_path(reward_matrix, start_state, goal):
+    """
+    Find a shortest path to the goal using BFS.
+
+    Args:
+        reward_matrix (list[list[int]]): Reward matrix.
+        start_state (int): Starting room.
+        goal (int): Destination room.
+
+    Returns:
+        list[int]: A shortest path from start to goal.
+    """
+    queue = deque([[start_state]])
+    visited = {start_state}
+
+    while queue:
+        # Remove the first path from the queue.
+        first_path = queue.popleft()
+
+        # Find the last room in that path.
+        last_room = first_path[-1]
+
+        # If that room is the goal,
+        # return the path.
+        if last_room == goal:
+            return first_path
+
+        # Find neighboring rooms connected
+        # by doors (rewards -1 or 100).
+        neighbor_rooms = [room for room, reward in enumerate(reward_matrix[last_room]) if reward != WALL_PENALTY and room != last_room]
+
+        # For each unvisited neighbor:
+        # mark it visited and enqueue a new path.
+        for room in neighbor_rooms:
+            if room not in visited:
+                visited.add(room)
+                new_path = first_path + [room]
+                queue.append(new_path)
+
+    return []
+
