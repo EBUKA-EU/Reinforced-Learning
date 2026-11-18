@@ -1,5 +1,5 @@
 from q_learning import Q,WALL_PENALTY
-from environment import GOAL
+from environment import R,GOAL
 
 from collections import deque
 
@@ -80,3 +80,25 @@ def bfs_shortest_path(reward_matrix, start_state, goal):
 
     return []
 
+
+for start_state in range(GOAL):
+    # get the Q-learning path
+    q_path = get_best_path(Q,start_state,GOAL)
+
+    # Get the BFS shortest path
+    bfs_path = bfs_shortest_path(R,start_state,GOAL)
+
+    # calculate the number of steps in each path
+    q_steps = len(q_path) -1
+    bfs_steps = len(bfs_path) - 1
+
+    # Check whether the number of steps matches
+    is_shortest = True if len(q_path) == len(bfs_path) else False
+
+    # print both paths
+    print(f"Room {start_state}")
+    print(f"Q-learing: {q_path}")
+    print(f"BFS:       {bfs_path}")
+    print(f"Steps: {q_steps}")
+    print(f"Shortest?: {is_shortest}")
+    print()
