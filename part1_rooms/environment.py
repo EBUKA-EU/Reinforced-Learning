@@ -25,8 +25,6 @@ DOORS = [
     (7, 6)
 ]
 
-Q = [[0] * NUM_STATES for _ in range(NUM_STATES)]
-
 R = [[WALL_PENALTY] * NUM_STATES for _ in range(NUM_STATES)]
 for state, action in DOORS:
     R[state][action] = 100 if action == GOAL else -1
