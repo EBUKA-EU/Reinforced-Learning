@@ -19,6 +19,7 @@ def get_best_path(q_grid, start_state, goal):
     """
     path = [start_state]
     state = start_state
+    visited = {start_state}
 
     # Continue until the agent reaches the goal.
     while state != goal:
@@ -28,6 +29,12 @@ def get_best_path(q_grid, start_state, goal):
 
         # Move to the next state.
         next_state = best_action
+
+        # Check if this state is already visited
+        if next_state in visited:
+            raise ValueError("Agent tried to enter an already visited room")
+
+        visited.add(next_state)
 
         # Add the next state to the path.
         path.append(next_state)
