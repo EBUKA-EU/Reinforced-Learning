@@ -28,6 +28,38 @@ def choose_action(q_grid, state, epsilon, env):
     else:
         return q_grid[state].index(max(q_grid[state]))
 
+def update_q(q_grid, state, action, reward, next_state, terminated, alpha, gamma):
+    """
+    Update one Q-value using the Q-learning rule.
+
+    Args:
+        q_grid (list[list[float]]): Q-table.
+        state (int): Current state.
+        action (int): Action taken.
+        reward (float): Immediate reward.
+        next_state (int): State after the action.
+        terminated (bool): Whether a terminal state was reached.
+        alpha (float): Learning rate.
+        gamma (float): Discount factor.
+    """
+    # Retrieve the current Q-value
+    old_q_value = q_grid[state][action]
+
+    # Calculate the maximum future Q-value, zero if terminated
+    if terminated:
+        max_future_q = 0
+    else:
+        max_future_q = max(q_grid[next_state])
+
+    # Calculate the target
+    target = reward + gamma * max_future_q
+
+    # Calculate the updated Q
+    new_q_value = old_q_value + alpha * (target - old_q_value)
+
+    q_grid[state][action] = new_q_value
+
+
 if __name__ == "__main__":
 
     # Start a new episode
