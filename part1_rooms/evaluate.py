@@ -1,17 +1,21 @@
-from q_learning import Q,WALL_PENALTY
-from environment import R,GOAL
+from q_learning import train_agent
+from environment import R,GOAL, WALL_PENALTY
 
 from collections import deque
 
-def get_best_path(q_grid, start_state, goal):
+def get_best_path(q_grid, reward_matrix, start_state, goal):
     """
     Find the greedy path from a starting room to the goal
     using a trained Q-table.
 
     Args:
         q_grid (list[list[float]]): Trained Q-table.
+        reward_matrix (list[list[int]]): Reward matrix.
         start_state (int): Starting room.
         goal (int): Goal state.
+    
+    Raises:
+        ValueError: If the agent selects a wall or revisits a room.
 
     Returns:
         list[int]: Sequence of states visited, including
@@ -26,6 +30,9 @@ def get_best_path(q_grid, start_state, goal):
         # Find the action with the highest Q-value
         # in the current state's row.
         best_action = q_grid[state].index(max(q_grid[state]))
+
+        if reward_matrix[state][best_action] == WALL_PENALTY:
+            raise ValueError("Agent tried to move through a wall")
 
         # Move to the next state.
         next_state = best_action
@@ -87,13 +94,14 @@ def bfs_shortest_path(reward_matrix, start_state, goal):
 
     return []
 
+Q = train_agent()
 
 for start_state in range(GOAL):
     # get the Q-learning path
     try:
-        q_path = get_best_path(Q,start_state,GOAL)
+        q_path = get_best_path(Q,R,start_state,GOAL)
     except ValueError as e:
-        print(f"Room {start_state}:=> Cycle detected: {e}")
+        print(f"Room {start_state}:=> Cycle or wall detected: {e}")
         continue
     # Get the BFS shortest path
     bfs_path = bfs_shortest_path(R,start_state,GOAL)
@@ -103,7 +111,7 @@ for start_state in range(GOAL):
     bfs_steps = len(bfs_path) - 1
 
     # Check whether the number of steps matches
-    is_shortest = q_path == bfs_path
+    is_shortest = q_steps == bfs_steps
 
     # print both paths
     print(f"Room {start_state}")
