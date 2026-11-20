@@ -1,6 +1,7 @@
 
 import random
 import gymnasium as gym
+import matplotlib.pyplot as plt
 
 env = gym.make("Taxi-v4", render_mode="ansi")
 
@@ -59,33 +60,81 @@ def update_q(q_grid, state, action, reward, next_state, terminated, alpha, gamma
 
     q_grid[state][action] = new_q_value
 
+EPISODES = 10000
+ALPHA = 0.1
+GAMMA = 0.95
 
-if __name__ == "__main__":
+EPSILON = 1.0
+EPSILON_MIN = 0.05
+EPSILON_DECAY = 0.9995
 
-    # Start a new episode
-    state, info = env.reset()
+episode_rewards = []
 
-    print(f"Initial state: {state}")
-    print(f"Number of states: {env.observation_space.n}")
-    print(f"Number of actions: {env.action_space.n}")
+WINDOW = 100
+moving_averages = []
 
-    print(env.render())
+def main():
+    epsilon = EPSILON
+    for _ in range(EPISODES):
+    # Reset the environment
+        state, _  = env.reset()
 
-    # Select a random action using Gymnasium
-    action = choose_action(Q, state, 1.0, env)
+        done = False
+        total_reward = 0
 
-    # Execute the action and unpack all five returned values
-    next_state, reward, terminated, truncated, info = env.step(action)
+        while not done:
+            # Choose an action using the epsilon-greedy
+            action = choose_action(Q,state,epsilon,env)
 
-    # Determine wheter the episode is ended
-    done = truncated or terminated
+            # Execute the action using
+            next_state, reward, terminated, truncated, info = env.step(action)
 
-    print(f"Action: {action}")
-    print(f"Next state: {next_state}")
-    print(f"Reward: {reward}")
-    print(f"Episode finished?: {done}")
+            # Update the Q-table
+            update_q(Q, state, action, reward, next_state,terminated,ALPHA,GAMMA)
 
-    print(env.render())
+            # Accummulate reward
+            total_reward += reward
+
+            # Update the current state
+            state = next_state
+
+            # Check whether the episode has ended
+            done = terminated or truncated
+
+        # Save the total reward earned in this episode
+        episode_rewards.append(total_reward)
+
+        # Decay epsilon, but dont let it fall below EPSILON_MIN
+        epsilon = max(epsilon * EPSILON_DECAY, EPSILON_MIN)
 
     env.close()
 
+
+    # Calculate a moving average 
+    # using each consecutive group of 100 rewards
+    for i in range(WINDOW, len(episode_rewards) + 1):
+        # get the previous window reward
+        recent_rewards = episode_rewards[i - WINDOW: i]
+
+        # Calculate the average
+        average = sum(recent_rewards) / len(recent_rewards)
+
+        moving_averages.append(average)
+
+    print(f"Training episodes: {EPISODES}")
+    print(f"Final epsilon: {epsilon:.4f}")
+    print(f"First 100 average reward: {sum(episode_rewards[:100]) / 100:.2f}")
+    print(f"Last 100 average reward: {sum(episode_rewards[-100:]) / 100:.2f}")
+
+    plt.plot(range(WINDOW, len(episode_rewards) + 1), moving_averages)
+    plt.xlabel("Episode")
+    plt.ylabel("Average reward")
+    plt.title("Taxi Q-Learning Training Performance")
+    plt.savefig("training_performance.png", dpi=150)
+    
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
