@@ -60,6 +60,53 @@ def update_q(q_grid, state, action, reward, next_state, terminated, alpha, gamma
 
     q_grid[state][action] = new_q_value
 
+def demostrate_action(q_grid, num_rides=3):
+    """
+    Demonstrate a trained Taxi agent completing rides.
+
+    Args:
+        q_grid (list[list[float]]): Trained Q-table.
+        num_rides (int): Number of rides to demonstrate.
+    """
+    demo_env = gym.make("Taxi-v4", render_mode="ansi")
+
+    for ride in range(num_rides):
+        state, _ = demo_env.reset()
+
+        done = False
+        total_reward = 0
+        steps = 0
+
+        print(f"\nRide {ride + 1}")
+        print(demo_env.render())
+
+        while not done:
+            # Select the action with the highest Q-value in the current state
+            action = q_grid[state].index(max(q_grid[state]))
+
+            # Execute the action
+            next_state, reward, terminated, truncated, _ = demo_env.step(action)
+
+            # Accumulate reward and steps
+            total_reward += reward
+            steps += 1
+
+            # Update the current state
+            state = next_state
+
+            # Determine whether the ride ended
+            done = terminated or truncated
+
+            # Show each move for the first ride
+            if ride == 0:
+                print(demo_env.render())
+
+        print(f"Steps: {steps}")
+        print(f"Total reward: {total_reward}")
+        print(f"Delivery successful: {terminated}")
+
+    demo_env.close()
+
 EPISODES = 10000
 ALPHA = 0.1
 GAMMA = 0.95
@@ -126,14 +173,16 @@ def main():
     print(f"First 100 average reward: {sum(episode_rewards[:100]) / 100:.2f}")
     print(f"Last 100 average reward: {sum(episode_rewards[-100:]) / 100:.2f}")
 
-    plt.plot(range(WINDOW, len(episode_rewards) + 1), moving_averages)
-    plt.xlabel("Episode")
-    plt.ylabel("Average reward")
-    plt.title("Taxi Q-Learning Training Performance")
-    plt.savefig("training_performance.png", dpi=150)
+    # plt.plot(range(WINDOW, len(episode_rewards) + 1), moving_averages)
+    # plt.xlabel("Episode")
+    # plt.ylabel("Average reward")
+    # plt.title("Taxi Q-Learning Training Performance")
+    # plt.savefig("training_performance.png", dpi=150)
     
-    plt.tight_layout()
-    plt.show()
+    # plt.tight_layout()
+    # plt.show()
+
+    demostrate_action(Q, num_rides=3)
 
 
 if __name__ == "__main__":
