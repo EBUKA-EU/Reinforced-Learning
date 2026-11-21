@@ -1,4 +1,5 @@
 import gymnasium as gym
+import matplotlib.pyplot as plt
 from part2_agent.taxi import choose_action, update_q
 
 def modify_reward(reward, terminated):
@@ -73,9 +74,31 @@ def train_frozenlake(env, episodes, use_modified_reward=False):
         # decay epsilon
         epsilon = max(EPSILON_MIN, epsilon * EPSILON_DECAY)
 
-    env.close()
-
     return q_grid, success_history
+
+def moving_average_success(history, window=100):
+    """
+    Calculate moving-average success rates.
+
+    Args:
+        history (list[int]): Episode outcomes
+            where 1 means success and 0 means failure.
+        window (int): Number of episodes per window.
+
+    Returns:
+        list[float]: Moving-average success percentages.
+    """
+    averages = []
+
+    for i in range(window, len(history) + 1):
+        # extract the previous window outocme
+        recent = history[i - window :i]
+        #calculate the percentage success
+        success_rate = sum(recent)/len(recent) * 100
+        averages.append(success_rate)
+
+    return averages
+
 
 
 env = gym.make(
@@ -99,6 +122,28 @@ modified_q, modified_history = train_frozenlake(env, 2000, use_modified_reward=T
 default_rate = sum(default_history) / len(default_history) * 100
 modified_rate = sum(modified_history) / len(modified_history) * 100
 
+default_avg = moving_average_success(default_history)
+modified_avg = moving_average_success(modified_history)
+
+# Episode numbers, starting at episode 100
+episodes = range(100, len(default_history) + 1)
+
+# Plot both reward systems on the same graph
+plt.plot(episodes, default_avg, label="Default Rewards")
+plt.plot(episodes, modified_avg, label="Modified Rewards")
+
+plt.xlabel("Training Episode")
+plt.ylabel("Moving Average Success Rate (%)")
+plt.title("FrozenLake: Default vs Modified Rewards (2000 Episodes)")
+
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+
+plt.savefig("frozenlake_comparison_2000.png", dpi=150)
+
+# Display the graph
+plt.show()
 
 print(f"Default reward success rate: {default_rate:.2f}%")
 print(f"Modified reward success rate: {modified_rate:.2f}%")
