@@ -108,7 +108,7 @@ env = gym.make(
     render_mode="ansi"
 )
 
-EPISODES = 2000
+EPISODES = 10000
 ALPHA = 0.1
 GAMMA = 0.95
 
@@ -116,8 +116,8 @@ EPSILON = 1.0
 EPSILON_MIN = 0.05
 EPSILON_DECAY = 0.9995
 
-default_q, default_history = train_frozenlake(env,2000,use_modified_reward=False)
-modified_q, modified_history = train_frozenlake(env, 2000, use_modified_reward=True)
+default_q, default_history = train_frozenlake(env,EPISODES,use_modified_reward=False)
+modified_q, modified_history = train_frozenlake(env, EPISODES, use_modified_reward=True)
 
 default_rate = sum(default_history) / len(default_history) * 100
 modified_rate = sum(modified_history) / len(modified_history) * 100
@@ -134,18 +134,23 @@ plt.plot(episodes, modified_avg, label="Modified Rewards")
 
 plt.xlabel("Training Episode")
 plt.ylabel("Moving Average Success Rate (%)")
-plt.title("FrozenLake: Default vs Modified Rewards (2000 Episodes)")
+plt.title(f"FrozenLake: Default vs Modified Rewards ({EPISODES} Episodes)")
+
+plt.savefig(f"frozenlake_comparison.png", dpi=150)
 
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
 
-plt.savefig("frozenlake_comparison_2000.png", dpi=150)
-
 # Display the graph
 plt.show()
 
+print(f"\nTraining episodes: {EPISODES}")
+
 print(f"Default reward success rate: {default_rate:.2f}%")
 print(f"Modified reward success rate: {modified_rate:.2f}%")
+
+print(f"Default last 100 success rate: {sum(default_history[-100:])}%")
+print(f"Modified last 100 success rate: {sum(modified_history[-100:])}%")
 
 env.close()
