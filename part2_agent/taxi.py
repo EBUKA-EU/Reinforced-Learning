@@ -1,4 +1,4 @@
-
+import time
 import random
 import gymnasium as gym
 import matplotlib.pyplot as plt
@@ -62,13 +62,19 @@ def update_q(q_grid, state, action, reward, next_state, terminated, alpha, gamma
 
 def demostrate_action(q_grid, num_rides=3):
     """
-    Demonstrate a trained Taxi agent completing rides.
+    Demonstrate a trained Taxi agent completing rides 
+    with graphical rendering.
 
     Args:
         q_grid (list[list[float]]): Trained Q-table.
         num_rides (int): Number of rides to demonstrate.
     """
-    demo_env = gym.make("Taxi-v4", render_mode="ansi")
+    demo_env = gym.make("Taxi-v4", render_mode="human")
+
+    action_names = [
+        "South", "North", "East",
+        "West", "Pickup", "Drop-off"
+    ]
 
     for ride in range(num_rides):
         state, _ = demo_env.reset()
@@ -77,8 +83,10 @@ def demostrate_action(q_grid, num_rides=3):
         total_reward = 0
         steps = 0
 
+        print(f"\n{'=' * 35}")
         print(f"\nRide {ride + 1}")
-        print(demo_env.render())
+        print(f"Starting state: {state}")
+        print(f"\n{'=' * 35}")
 
         while not done:
             # Select the action with the highest Q-value in the current state
@@ -91,20 +99,28 @@ def demostrate_action(q_grid, num_rides=3):
             total_reward += reward
             steps += 1
 
+            print(
+                f"Step {steps:2d} | "
+                f"State: {state:3d} -> {next_state:3d} | "
+                f"Action: {action_names[action]:8s} | "
+                f"Reward: {reward:+d}"
+            )
+
             # Update the current state
             state = next_state
 
             # Determine whether the ride ended
             done = terminated or truncated
 
-            # Show each move for the first ride
-            if ride == 0:
-                print(demo_env.render())
+            # Slow down the graphical representation
+            time.sleep(0.3)
 
+        print(f"\nRide {ride + 1} Summary")
         print(f"Steps: {steps}")
         print(f"Total reward: {total_reward}")
         print(f"Delivery successful: {terminated}")
 
+    input("Press Enter to end the demostration")
     demo_env.close()
 
 EPISODES = 10000
@@ -173,14 +189,19 @@ def main():
     print(f"First 100 average reward: {sum(episode_rewards[:100]) / 100:.2f}")
     print(f"Last 100 average reward: {sum(episode_rewards[-100:]) / 100:.2f}")
 
-    # plt.plot(range(WINDOW, len(episode_rewards) + 1), moving_averages)
-    # plt.xlabel("Episode")
-    # plt.ylabel("Average reward")
-    # plt.title("Taxi Q-Learning Training Performance")
-    # plt.savefig("training_performance.png", dpi=150)
+    plt.plot(range(WINDOW, len(episode_rewards) + 1), moving_averages)
     
-    # plt.tight_layout()
-    # plt.show()
+    plt.xlabel("Episode")
+    plt.ylabel("Average reward")
+    plt.title("Taxi Q-Learning Training Performance")
+
+    
+    plt.grid(True)
+    plt.tight_layout()
+    
+    plt.savefig("training_performance.png", dpi=150)
+
+    #plt.show()
 
     demostrate_action(Q, num_rides=3)
 
