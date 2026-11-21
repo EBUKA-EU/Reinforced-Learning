@@ -1,5 +1,6 @@
 import gymnasium as gym
 import matplotlib.pyplot as plt
+import time
 from part2_agent.taxi import choose_action, update_q
 
 def modify_reward(reward, terminated):
@@ -131,7 +132,7 @@ def demostrate_frozenlake(q_grid, num_episodes=3):
         "FrozenLake-v1",
         map_name="8x8",
         is_slippery=True,
-        render_mode="ansi"
+        render_mode="human"
     )
 
     for episode in range(num_episodes):
@@ -140,8 +141,7 @@ def demostrate_frozenlake(q_grid, num_episodes=3):
         steps = 0
 
         print(f"\nDemonstration {episode + 1}")
-        print(f"Current state: {state}")
-        print(demo_env.render())
+        # print(demo_env.render())
 
         while not done:
             action = q_grid[state].index(max(q_grid[state]))
@@ -150,11 +150,14 @@ def demostrate_frozenlake(q_grid, num_episodes=3):
             state = next_state
             steps += 1
 
+            print(f"Step {steps}: Current state = {state}")
+
             done = truncated or terminated
 
+            time.sleep(0.15)
             # Display each move for the first demostration
-            if episode == 0:
-                print(demo_env.render())
+            # if episode == 0:
+            #     print(demo_env.render())
 
         # Determine whether the goal was reached
         success = 1 if terminated and reward == 1 else 0
