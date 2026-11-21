@@ -119,6 +119,52 @@ def broken_reward(reward, terminated):
     else:
         return reward - 0.1
 
+def demostrate_frozenlake(q_grid, num_episodes=3):
+    """
+    Demonstrate a trained FrozenLake agent.
+
+    Args:
+        q_grid (list[list[float]]): Trained Q-table.
+        num_episodes (int): Number of demonstrations.
+    """
+    demo_env = gym.make(
+        "FrozenLake-v1",
+        map_name="8x8",
+        is_slippery=True,
+        render_mode="ansi"
+    )
+
+    for episode in range(num_episodes):
+        state, _ = demo_env.reset()
+        done = False
+        steps = 0
+
+        print(f"\nDemonstration {episode + 1}")
+        print(f"Current state: {state}")
+        print(demo_env.render())
+
+        while not done:
+            action = q_grid[state].index(max(q_grid[state]))
+            next_state, reward, terminated, truncated, _ = demo_env.step(action)
+
+            state = next_state
+            steps += 1
+
+            done = truncated or terminated
+
+            # Display each move for the first demostration
+            if episode == 0:
+                print(demo_env.render())
+
+        # Determine whether the goal was reached
+        success = 1 if terminated and reward == 1 else 0
+
+        print(f"Steps: {steps}")
+        print(f"Reached goal: {success}")
+
+    demo_env.close()
+
+
 env = gym.make(
     "FrozenLake-v1",
     map_name="8x8",
@@ -175,5 +221,7 @@ print(f"Modified last 100 success rate: {sum(modified_history[-100:])}%")
 
 print(f"\nBroken reward success rate: {broken_rate:.2f}%")
 print(f"Broken last 100 success rate: {sum(broken_history[-100:])}%")
+
+demostrate_frozenlake(modified_q, num_episodes=3)
 
 env.close()
