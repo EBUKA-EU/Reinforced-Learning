@@ -165,6 +165,8 @@ def demostrate_frozenlake(q_grid, num_episodes=3):
         print(f"Steps: {steps}")
         print(f"Reached goal: {success}")
 
+    input("Press Enter to close the demostration...")
+
     demo_env.close()
 
 
